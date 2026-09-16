@@ -1,12 +1,13 @@
 import React, { useEffect, useState } from 'react';
-import { View, Text } from 'react-native';
+import { View, Text, StyleSheet, useColorScheme } from 'react-native';
 import Animated, { FadeInUp, FadeOutUp } from 'react-native-reanimated';
 import { useProgression } from '@/hooks/ProgressionContext';
 import { Medal } from 'lucide-react-native';
 import * as Haptics from 'expo-haptics';
 
 export const BadgeNotification = () => {
-  const { badges } = useProgression();
+  const isDark = useColorScheme() === 'dark';
+  const { badges, hapticsEnabled } = useProgression();
   const [visible, setVisible] = useState(false);
   const [latestBadge, setLatestBadge] = useState<string | null>(null);
   const [processedBadges, setProcessedBadges] = useState<string[]>(badges);
@@ -17,7 +18,7 @@ export const BadgeNotification = () => {
       const badge = newBadges[0];
       setLatestBadge(badge);
       setVisible(true);
-      Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
+      if (hapticsEnabled) Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
 
       const timer = setTimeout(() => {
         setVisible(false);
@@ -31,27 +32,78 @@ export const BadgeNotification = () => {
   if (!visible || !latestBadge) return null;
 
   const badgeNames: Record<string, string> = {
-    lingo_kanto_silver: 'Kanto Swipe Silver',
-    lingo_kanto_gold: 'Kanto Swipe Gold',
-    wtp_kanto_silver: 'WTP Kanto Silver',
-    wtp_kanto_gold: 'WTP Kanto Gold',
+    lingo_kanto_silver: 'Kanto Silver',
+    lingo_kanto_gold: 'Kanto Gold',
+    wtp_kanto_silver: 'WTP Silver',
+    wtp_kanto_gold: 'WTP Gold',
   };
 
   return (
-    <View className="absolute top-32 left-0 right-0 items-center z-[110] px-6">
+    <View style={styles.container}>
       <Animated.View
         entering={FadeInUp.springify()}
         exiting={FadeOutUp}
-        className="bg-indigo-600 p-6 rounded-[30px] shadow-2xl flex-row items-center border-4 border-white dark:border-slate-900"
+        style={[styles.toast, isDark ? styles.borderDark : styles.borderWhite]}
       >
-        <View className="bg-white/20 p-3 rounded-2xl mr-4">
+        <View style={styles.iconWrapper}>
           <Medal size={32} color="white" />
         </View>
         <View>
-          <Text className="text-white font-black text-xs uppercase tracking-widest mb-1">Badge Earned!</Text>
-          <Text className="text-white font-black text-xl uppercase italic">{badgeNames[latestBadge] || latestBadge}</Text>
+          <Text style={styles.label}>Badge Earned!</Text>
+          <Text style={styles.title}>{badgeNames[latestBadge] || latestBadge}</Text>
         </View>
       </Animated.View>
     </View>
   );
 };
+
+const styles = StyleSheet.create({
+  container: {
+    position: 'absolute',
+    top: 128,
+    left: 0,
+    right: 0,
+    alignItems: 'center',
+    zIndex: 110,
+    paddingHorizontal: 24,
+  },
+  toast: {
+    backgroundColor: '#4F46E5',
+    padding: 24,
+    borderRadius: 30,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 10 },
+    shadowOpacity: 0.3,
+    shadowRadius: 20,
+    elevation: 10,
+    flexDirection: 'row',
+    alignItems: 'center',
+    borderWidth: 4,
+  },
+  borderWhite: { borderColor: '#FFFFFF' },
+  borderDark: { borderColor: '#0F172A' },
+  iconWrapper: {
+    backgroundColor: 'rgba(255, 255, 255, 0.2)',
+    padding: 12,
+    borderRadius: 16,
+    marginRight: 16,
+  },
+  label: {
+    color: '#FFFFFF',
+    fontFamily: 'SF Pro Rounded',
+    fontWeight: '900',
+    fontSize: 10,
+    textTransform: 'uppercase',
+    letterSpacing: 1.5,
+    marginBottom: 4,
+  },
+  title: {
+    color: '#FFFFFF',
+    fontFamily: 'SF Pro Rounded',
+    fontWeight: '900',
+    fontSize: 20,
+    textTransform: 'uppercase',
+    fontStyle: 'italic',
+    letterSpacing: -0.5,
+  },
+});

@@ -1,16 +1,29 @@
-import { useState, useCallback, useMemo } from 'react';
-import { KANTO_POKEMON, Pokemon, getEffectiveness } from '@/data/pokemon';
+import { useState, useCallback, useMemo, useEffect } from 'react';
+import { Pokemon, getEffectiveness } from '@/data/pokemon';
 import { PokemonType } from '@/data/types';
+import { useProgression } from './ProgressionContext';
 
 export const useGameEngine = () => {
-  const [player, setPlayer] = useState<Pokemon>(KANTO_POKEMON[Math.floor(Math.random() * KANTO_POKEMON.length)]);
-  const [opponent, setOpponent] = useState<Pokemon>(KANTO_POKEMON[Math.floor(Math.random() * KANTO_POKEMON.length)]);
+  const { addXp, selectedRegion } = useProgression();
+
+  const pool = useMemo(() => {
+    const { POKEMON_BY_REGION } = require('@/data/pokemon');
+    return POKEMON_BY_REGION[selectedRegion] || POKEMON_BY_REGION['Kanto'];
+  }, [selectedRegion]);
+
+  const getNewPokemon = useCallback(() => {
+    return pool[Math.floor(Math.random() * pool.length)];
+  }, [pool]);
+
+  const [player, setPlayer] = useState<Pokemon>(getNewPokemon());
+  const [opponent, setOpponent] = useState<Pokemon>(getNewPokemon());
   const [score, setScore] = useState(0);
   const [streak, setStreak] = useState(0);
 
-  const getNewPokemon = useCallback(() => {
-    return KANTO_POKEMON[Math.floor(Math.random() * KANTO_POKEMON.length)];
-  }, []);
+  useEffect(() => {
+    setPlayer(getNewPokemon());
+    setOpponent(getNewPokemon());
+  }, [selectedRegion, getNewPokemon]);
 
   const handleSwipe = useCallback((direction: 'left' | 'right' | 'up') => {
     // Logic:
@@ -42,6 +55,7 @@ export const useGameEngine = () => {
     if (correct) {
       setScore(s => s + 10);
       setStreak(s => s + 1);
+      addXp(10, 'lingo');
       // If player won, change opponent
       if (direction === 'right') {
         setOpponent(getNewPokemon());

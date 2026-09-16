@@ -7,11 +7,19 @@ interface ProgressionState {
   totalXp: number;
   badges: string[];
   unlockedRegions: string[];
+  lingoCorrectCount: number;
+  wtpCorrectCount: number;
+  selectedRegion: string;
+  hapticsEnabled: boolean;
+  themePreference: 'light' | 'dark' | 'system';
 }
 
 interface ProgressionContextType extends ProgressionState {
-  addXp: (amount: number) => void;
+  addXp: (amount: number, type?: 'lingo' | 'wtp') => void;
   resetProgression: () => void;
+  setSelectedRegion: (region: string) => void;
+  setHapticsEnabled: (enabled: boolean) => void;
+  setThemePreference: (pref: 'light' | 'dark' | 'system') => void;
 }
 
 const ProgressionContext = createContext<ProgressionContextType | undefined>(undefined);
@@ -27,6 +35,11 @@ export const ProgressionProvider: React.FC<{ children: React.ReactNode }> = ({ c
     totalXp: 0,
     badges: [],
     unlockedRegions: ['Kanto'],
+    lingoCorrectCount: 0,
+    wtpCorrectCount: 0,
+    selectedRegion: 'Kanto',
+    hapticsEnabled: true,
+    themePreference: 'system',
   });
 
   const [isLoaded, setIsLoaded] = useState(false);
@@ -57,17 +70,46 @@ export const ProgressionProvider: React.FC<{ children: React.ReactNode }> = ({ c
     }
   }, [state, isLoaded]);
 
-  const addXp = useCallback((amount: number) => {
+  const addXp = useCallback((amount: number, type?: 'lingo' | 'wtp') => {
     setState(prev => {
       const newTotalXp = prev.totalXp + amount;
       const newLevel = Math.floor(newTotalXp / XP_PER_LEVEL) + 1;
       const newXp = newTotalXp % XP_PER_LEVEL;
 
-      // Logic for unlocking regions could go here
+      // Update counts
+      let newLingoCount = prev.lingoCorrectCount;
+      let newWtpCount = prev.wtpCorrectCount;
+      if (type === 'lingo') newLingoCount += 1;
+      if (type === 'wtp') newWtpCount += 1;
+
+      // Check for badges
+      const newBadges = [...prev.badges];
+      const checkBadge = (id: string, condition: boolean) => {
+        if (condition && !newBadges.includes(id)) {
+          newBadges.push(id);
+        }
+      };
+
+      checkBadge('lingo_kanto_silver', newLingoCount >= 50);
+      checkBadge('lingo_kanto_gold', newLingoCount >= 100);
+      checkBadge('wtp_kanto_silver', newWtpCount >= 10);
+      checkBadge('wtp_kanto_gold', newWtpCount >= 50);
+
+      // Logic for unlocking regions
       const newRegions = [...prev.unlockedRegions];
-      if (newLevel >= 5 && !newRegions.includes('Johto')) {
-        newRegions.push('Johto');
-      }
+      const unlock = (lvl: number, reg: string) => {
+        if (newLevel >= lvl && !newRegions.includes(reg)) newRegions.push(reg);
+      };
+
+      unlock(5, 'Johto');
+      unlock(7, 'Hoenn');
+      unlock(9, 'Sinnoh');
+      unlock(11, 'Unova');
+      unlock(13, 'Kalos');
+      unlock(15, 'Alola');
+      unlock(17, 'Galar');
+      unlock(19, 'Paldea');
+      unlock(20, 'Championship');
 
       return {
         ...prev,
@@ -75,6 +117,9 @@ export const ProgressionProvider: React.FC<{ children: React.ReactNode }> = ({ c
         xp: newXp,
         level: newLevel,
         unlockedRegions: newRegions,
+        lingoCorrectCount: newLingoCount,
+        wtpCorrectCount: newWtpCount,
+        badges: newBadges,
       };
     });
   }, []);
@@ -86,11 +131,33 @@ export const ProgressionProvider: React.FC<{ children: React.ReactNode }> = ({ c
       totalXp: 0,
       badges: [],
       unlockedRegions: ['Kanto'],
+      lingoCorrectCount: 0,
+      wtpCorrectCount: 0,
+      selectedRegion: 'Kanto',
     });
   }, []);
 
+  const setSelectedRegion = useCallback((region: string) => {
+    setState(prev => ({ ...prev, selectedRegion: region }));
+  }, []);
+
+  const setHapticsEnabled = useCallback((enabled: boolean) => {
+    setState(prev => ({ ...prev, hapticsEnabled: enabled }));
+  }, []);
+
+  const setThemePreference = useCallback((pref: 'light' | 'dark' | 'system') => {
+    setState(prev => ({ ...prev, themePreference: pref }));
+  }, []);
+
   return (
-    <ProgressionContext.Provider value={{ ...state, addXp, resetProgression }}>
+    <ProgressionContext.Provider value={{
+      ...state,
+      addXp,
+      resetProgression,
+      setSelectedRegion,
+      setHapticsEnabled,
+      setThemePreference
+    }}>
       {children}
     </ProgressionContext.Provider>
   );

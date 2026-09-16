@@ -1,56 +1,48 @@
-# Welcome to your Expo app 👋
+# PokeLingo
 
-This is an [Expo](https://expo.dev) project created with [`create-expo-app`](https://www.npmjs.com/package/create-expo-app).
+PokeLingo is a web-based training tool designed to help players master Pokemon type effectiveness and identification. It provides a structured learning path through every generation of the series, from Kanto to Paldea.
 
-## Get started
+## Overview
 
-1. Install dependencies
+The application focuses on two primary modes of practice: type matchup speed-testing and silhouette recognition. As you play, you earn experience points and level up your trainer profile, which unlocks new regions and challenges.
 
-   ```bash
-   npm install
-   ```
+## Game Modes
 
-2. Start the app
+### PokeLingo (Type Mastery)
+A split-screen challenge where you compare two Pokemon. Your goal is to determine the type relationship between them by swiping:
+- Swipe Right: Your Pokemon is super effective against the opponent.
+- Swipe Left: The opponent is super effective against you.
+- Swipe Up: Neither Pokemon has a type advantage.
 
-   ```bash
-   npx expo start
-   ```
+### Mystery (Who's That Pokemon?)
+A silhouette identification game. You are presented with a hidden Pokemon and four possible names. Identifying the correct Pokemon fills your regional collection and earns badges.
 
-In the output, you'll find options to open the app in a
+### Type Guide
+A comprehensive reference tool that maps out every type's weaknesses and strengths. It serves as a study guide for players before they jump into the games.
 
-- [development build](https://docs.expo.dev/develop/development-builds/introduction/)
-- [Android emulator](https://docs.expo.dev/workflow/android-studio-emulator/)
-- [iOS simulator](https://docs.expo.dev/workflow/ios-simulator/)
-- [Expo Go](https://expo.dev/go), a limited sandbox for trying out app development with Expo
+## Progression and Regions
 
-You can start developing by editing the files inside the **app** directory. This project uses [file-based routing](https://docs.expo.dev/router/introduction).
+The app tracks your progress locally in your browser. You begin in the Kanto region and unlock subsequent generations as you reach specific level milestones:
+- Johto: Level 5
+- Hoenn: Level 7
+- Sinnoh: Level 9
+- ...up to the Championship Arena at Level 20.
 
-## Get a fresh project
+Achievements are recognized through the Gym Badge system, with Silver and Gold medals awarded for specific milestones in each game mode.
 
-When you're ready, run:
+## Technical Details
 
-```bash
-npm run reset-project
-```
+PokeLingo is built with React Native Web and Expo, allowing for a highly responsive, mobile-first interface that runs directly in any modern browser.
 
-This command will move the starter code to the **app-example** directory and create a blank **app** directory where you can start developing.
+### Local Development
+To run the project locally:
+1. Install dependencies: `npm install`
+2. Start the development server: `npm run web`
 
-### Other setup steps
+### Deployment
+The project is optimized for static hosting on GitHub Pages:
+- Build the project: `npm run build:web`
+- Deploy: `npm run deploy`
 
-- To set up ESLint for linting, run `npx expo lint`, or follow our guide on ["Using ESLint and Prettier"](https://docs.expo.dev/guides/using-eslint/)
-- If you'd like to set up unit testing, follow our guide on ["Unit Testing with Jest"](https://docs.expo.dev/develop/unit-testing/)
-- Learn more about the TypeScript setup in this template in our guide on ["Using TypeScript"](https://docs.expo.dev/guides/typescript/)
-
-## Learn more
-
-To learn more about developing your project with Expo, look at the following resources:
-
-- [Expo documentation](https://docs.expo.dev/): Learn fundamentals, or go into advanced topics with our [guides](https://docs.expo.dev/guides).
-- [Learn Expo tutorial](https://docs.expo.dev/tutorial/introduction/): Follow a step-by-step tutorial where you'll create a project that runs on Android, iOS, and the web.
-
-## Join the community
-
-Join our community of developers creating universal apps.
-
-- [Expo on GitHub](https://github.com/expo/expo): View our open source platform and contribute.
-- [Discord community](https://chat.expo.dev): Chat with Expo users and ask questions.
+### Privacy and Persistence
+Your progress is saved using the browser's local storage. No accounts, authentication, or external databases are required. All data remains on your own device.

@@ -1,22 +1,23 @@
 import React, { useEffect, useState } from 'react';
-import { View, Text } from 'react-native';
+import { View, Text, StyleSheet, useColorScheme } from 'react-native';
 import Animated, {
   FadeInUp,
-  FadeOutUp,
-  SpringInAtRest,
-  Layout
+  FadeOutUp
 } from 'react-native-reanimated';
 import { useProgression } from '@/hooks/ProgressionContext';
 import { Trophy } from 'lucide-react-native';
+import * as Haptics from 'expo-haptics';
 
 export const LevelUpToast = () => {
-  const { level } = useProgression();
+  const isDark = useColorScheme() === 'dark';
+  const { level, hapticsEnabled } = useProgression();
   const [visible, setVisible] = useState(false);
   const [displayLevel, setDisplayLevel] = useState(level);
 
   useEffect(() => {
     if (level > displayLevel) {
       setVisible(true);
+      if (hapticsEnabled) Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
       const timer = setTimeout(() => {
         setVisible(false);
         setDisplayLevel(level);
@@ -28,20 +29,70 @@ export const LevelUpToast = () => {
   if (!visible) return null;
 
   return (
-    <View className="absolute top-16 left-0 right-0 items-center z-[100] px-6">
+    <View style={styles.container}>
       <Animated.View
         entering={FadeInUp.springify()}
         exiting={FadeOutUp}
-        className="bg-amber-500 p-6 rounded-[30px] shadow-2xl flex-row items-center border-4 border-white dark:border-slate-900"
+        style={[styles.toast, isDark ? styles.borderDark : styles.borderWhite]}
       >
-        <View className="bg-white/20 p-3 rounded-2xl mr-4">
+        <View style={styles.iconWrapper}>
           <Trophy size={32} color="white" />
         </View>
         <View>
-          <Text className="text-white font-black text-xs uppercase tracking-widest mb-1">New Level Reached!</Text>
-          <Text className="text-white font-black text-2xl uppercase italic">Level {level} Trainer</Text>
+          <Text style={styles.label}>New Level Reached!</Text>
+          <Text style={styles.title}>Level {level} Trainer</Text>
         </View>
       </Animated.View>
     </View>
   );
 };
+
+const styles = StyleSheet.create({
+  container: {
+    position: 'absolute',
+    top: 64,
+    left: 0,
+    right: 0,
+    alignItems: 'center',
+    zIndex: 100,
+    paddingHorizontal: 24,
+  },
+  toast: {
+    backgroundColor: '#F59E0B',
+    padding: 24,
+    borderRadius: 30,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 10 },
+    shadowOpacity: 0.3,
+    shadowRadius: 20,
+    elevation: 10,
+    flexDirection: 'row',
+    alignItems: 'center',
+    borderWidth: 4,
+  },
+  borderWhite: { borderColor: '#FFFFFF' },
+  borderDark: { borderColor: '#0F172A' },
+  iconWrapper: {
+    backgroundColor: 'rgba(255, 255, 255, 0.2)',
+    padding: 12,
+    borderRadius: 16,
+    marginRight: 16,
+  },
+  label: {
+    color: '#FFFFFF',
+    fontFamily: 'SF Pro Rounded',
+    fontWeight: '900',
+    fontSize: 10,
+    textTransform: 'uppercase',
+    letterSpacing: 1.5,
+    marginBottom: 4,
+  },
+  title: {
+    color: '#FFFFFF',
+    fontFamily: 'SF Pro Rounded',
+    fontWeight: '900',
+    fontSize: 24,
+    textTransform: 'uppercase',
+    fontStyle: 'italic',
+  },
+});
